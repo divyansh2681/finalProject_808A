@@ -1,13 +1,12 @@
 import numpy as np
-
 import pandas as pd
 import glob
-
 from scipy import stats
 from scipy.spatial.transform import Rotation as R
 from regression import *
 from svm import *
-# from models import *
+from xgboost__ import *
+
 
 """
 LG: Local Goal
@@ -18,11 +17,6 @@ cmd: command actions
 class MLpipeline():
 
     def __init__(self, path_train, path_test, model):
-        # dataFrame = self.importFiles(path)
-        # dataFrame_cleaned = self.cleanData(dataFrame)
-        # self.extractData(dataFrame_cleaned)
-        # self.A = self.generateA()
-        # self.y = np.vstack((self.cmdV, self.cmdW)).T
         self.train_X, self.train_y = self.runPipeline(path_train)
         self.test_X, self.test_y = self.runPipeline(path_test)
         self.learning(self.train_X, self.train_y, self.test_X, self.test_y, model)
@@ -166,13 +160,8 @@ class MLpipeline():
             LinearRegression(train_X, train_y, test_X, test_y)
         elif (model == "2"):
             SVM(train_X, train_y[:, 0], test_X, test_y[:, 0])
+        elif (model == "3"):
+            XGBoost(train_X, train_y[:, 0], test_X, test_y[:, 0])
+            # XGBoost(train_X, train_y, test_X, test_y)
         else:
-            print("Wrong input type, please try again")   
-
-train_path = '/home/divyansh/Documents/ENPM808A/final-project/data'                    
-testing_path = '/home/divyansh/Documents/ENPM808A/final-project/testing'
-
-print("Available models are: ")
-print('\n', "1: Linear Regression", '\n', "2: SVM", '\n', "3: ", '\n', "4: ")
-model = input("Please enter the model number: ")
-MLpipeline(train_path, testing_path, model)
+            print("Wrong input, please try again")

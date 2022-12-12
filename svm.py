@@ -1,5 +1,4 @@
 import numpy as np
-# from sklearn.linear_model import Ridge
 from sklearn.svm import SVR
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.model_selection import train_test_split
@@ -55,7 +54,7 @@ class SVM():
         self.predicted_full_y = mor.predict(self.test_X)
 
         r2_score_final = r2_score(self.test_y, self.predicted_full_y)
-        print(r2_score_final)
+        print("R2 score for the test data: ", r2_score_final)
         # k = range(1, 11, 1)
         plt.plot(kk, scores_list)
         plt.xlabel("Value of lamba, regularization parameter")

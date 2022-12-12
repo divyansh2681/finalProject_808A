@@ -1,13 +1,17 @@
 import numpy as np
-from sklearn.linear_model import Ridge
+from sklearn.svm import SVR
+# from sklearn.multioutput import MultiOutputRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve
+from xgboost import XGBClassifier
+# from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
-class LinearRegression():
+class XGBoost():
 
     def __init__(self, train_full_X, train_full_y, test_X, test_y) -> None:
         self.full_X = train_full_X
@@ -16,7 +20,7 @@ class LinearRegression():
         self.test_y = test_y
         self.splitData()
         self.prediction()
-        self.curve_plotting(self.full_X, self.full_y)
+        # self.curve_plotting(self.full_X, self.full_y)
 
     def splitData(self):
         self.full_X = shuffle(self.full_X, random_state=20, n_samples=None)
@@ -33,33 +37,44 @@ class LinearRegression():
         self.train_X, self.val_X, self.train_y, self.val_y = train_test_split(self.full_X, self.full_y, test_size=0.2, random_state=42)
 
     def prediction(self):
-        kk = []
-        scores_list = []
-        for k in range(1, 11, 1):
-            kk.append(k)
-            reg = Ridge(alpha = k)
-            reg.fit(self.train_X, self.train_y)
-            self.predict_y_train = reg.predict(self.train_X)
-            self.predict_val_y = reg.predict(self.val_X)
-            r2_score_value =  r2_score(self.val_y, self.predict_val_y)
-            scores_list.append(r2_score_value)
+        # kk = []
+        # scores_list = []
+        # self.var = 'poly'
+        # # for k in range(1, 11, 1):
+        # kk.append(1/k)
+        # mor = SVR(C = 1/k, kernel = self.var, epsilon=0.2)
+        # mor = mor.fit(self.train_X, self.train_y)
+        # self.predict_y_train = mor.predict(self.train_X)
+        # self.predict_val_y = mor.predict(self.val_X)
+        # r2_score_value =  r2_score(self.val_y, self.predict_val_y)
+        # scores_list.append(r2_score_value)
 
-        min_r2_score_index = scores_list.index(max(scores_list))
+        bst = XGBClassifier(n_estimators=2, gamma = 500, max_depth=6, learning_rate=10, objective='reg:logistic')
 
-        reg = Ridge(alpha = min_r2_score_index + 1)
-        reg.fit(self.full_X, self.full_y)
+        bst.fit(self.train_X, self.train_y)
+        self.predict_y_train = bst.predict(self.train_X)
+        self.predict_val_y = bst.predict(self.val_X)
+        r2_score_value =  r2_score(self.val_y, self.predict_val_y)
 
-        self.predicted_full_y = reg.predict(self.test_X)
+        # min_r2_score_index = scores_list.index(max(scores_list))
+
+        # mor = SVR(C = min_r2_score_index + 1, epsilon=0.2)
+        # mor.fit(self.full_X, self.full_y)
+
+        self.predicted_full_y = bst.predict(self.test_X)
 
         r2_score_final = r2_score(self.test_y, self.predicted_full_y)
+        mean_sq_err = mean_squared_error(self.test_y, self.predicted_full_y)
         print("R2 score for the test data: ", r2_score_final)
-        plt.plot(kk, scores_list)
-        plt.xlabel("Value of lamba, regularization parameter")
-        plt.ylabel("R2 Score")
-        plt.title("R2 score Vs Regularization parameter")
+        print("mean square error is: ", mean_sq_err)
+        # # k = range(1, 11, 1)
+        # plt.plot(kk, scores_list)
+        # plt.xlabel("Value of lamba, regularization parameter")
+        # plt.ylabel("R2 Score")
+        # plt.title("R2 score Vs Regularization parameter")
 
-    def curve_plotting(self, X,y):
-        train_sizes, train_scores, test_scores = learning_curve(Ridge(alpha=1), X, y, cv=10, n_jobs=-1, train_sizes=np.linspace(0.01, 1.0, 50))
+    def curve_plotting(self, X,y):  
+        train_sizes, train_scores, test_scores = learning_curve(SVR(C = 1, kernel = self.var, epsilon=0.2), X, y, cv=10, n_jobs=-1, train_sizes=np.linspace(0.01, 1.0, 50))
         train_mean = np.mean(train_scores, axis=1)
         train_std = np.std(train_scores, axis=1)
 
