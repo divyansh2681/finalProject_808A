@@ -1,16 +1,13 @@
 import numpy as np
-# from sklearn import svm
+
 import pandas as pd
 import glob
-# from sklearn.linear_model import LogisticRegression
+
 from scipy import stats
 from scipy.spatial.transform import Rotation as R
-# from sklearn.multioutput import MultiOutputRegressor
-# , MultiOutputClassifier
-# from sklearn.svm import SVR
-# from sklearn.metrics import mean_squared_error, mean_absolute_error
-# from sklearn.neural_network import MLPClassifier
-from models import *
+from regression import *
+from svm import *
+# from models import *
 
 """
 LG: Local Goal
@@ -20,12 +17,23 @@ cmd: command actions
 """
 class MLpipeline():
 
-    def __init__(self, path):
+    def __init__(self, path_train, path_test, model):
+        # dataFrame = self.importFiles(path)
+        # dataFrame_cleaned = self.cleanData(dataFrame)
+        # self.extractData(dataFrame_cleaned)
+        # self.A = self.generateA()
+        # self.y = np.vstack((self.cmdV, self.cmdW)).T
+        self.train_X, self.train_y = self.runPipeline(path_train)
+        self.test_X, self.test_y = self.runPipeline(path_test)
+        self.learning(self.train_X, self.train_y, self.test_X, self.test_y, model)
+
+    def runPipeline(self, path):
         dataFrame = self.importFiles(path)
         dataFrame_cleaned = self.cleanData(dataFrame)
         self.extractData(dataFrame_cleaned)
         self.A = self.generateA()
-        # self.learning()
+        self.y = np.vstack((self.cmdV, self.cmdW)).T
+        return self.A, self.y
 
     def importFiles(self, path): 
         files = glob.glob(path + '/*.csv')
@@ -123,77 +131,48 @@ class MLpipeline():
             self.lidarValAtFinalG()))
         return self.A
     
-    # def learning(self, y):
-    #     print("Available models are: ")
-    #     print('\n', "1: SVM", '\n', "2: Perceptron", '\n', "3: Neural Net", '\n', "4: Regression")
-    #     model = input("Please enter the model number: ")
-    #     print("Predicting the mean squared error and mean absolute error")
-    #     if (model == "1"):
-    #         y_pred = self.modelSVR(X, self.A)
-    #     elif (model == "2"):
-    #         y_pred = self.model_2(X, self.A)
-    #     else:
-    #         print("Wrong input type, please try again")   
+    ###Note: Verify that angle units are same and avoid occurence of infinity
+    # def angle_diff_goal(self, bot_pose:np.array, x_bot:np.array, y_bot:np.array, \
+    #     x_local:np.array, y_local:np.array, x_final:np.array, y_final:np.array)->None:
 
-    #     self.errorCalculation(y_pred, y_actual)
+    #     ####check the closest angle
+    #     rows = x_local.shape[0]
+    #     target_local_ang = np.zeros((rows,1))
+    #     target_final_ang = np.zeros((rows,1))
+    #     for i in range(x_local.shape[0]):
+    #         # print(x_local[i])   
+    #         x_diff = x_local[i] - x_bot[i]
+    #         y_diff = y_local[i] - y_bot[i]
+    #         if x_diff!=0:
+    #             target_local_ang[i] = np.rad2deg(np.arctan(y_diff/x_diff))
+    #             target_final_ang[i] = np.rad2deg(np.arctan(y_diff/x_diff))
+    #         else:
+    #             target_local_ang[i] = np.rad2deg(np.arctan(np.sign(y_diff)*np.inf))
+    #             target_final_ang[i] = np.rad2deg(np.arctan(np.sign(y_diff)*np.inf))
+    #     target_local_ang[target_local_ang<0] = 360+target_local_ang[target_local_ang<0]
+    #     target_final_ang[target_final_ang<0] = 360+target_final_ang[target_final_ang<0]
         
+    #     self.local_angdiff = bot_pose.reshape((rows,1))-target_local_ang
+    #     self.final_angdiff = bot_pose.reshape((rows,1)) - target_final_ang
+    #     # print((self.final_angdiff))
 
+
+    #      ####return the closest angle c/w or ac/w 
+    #     return None
+
+
+    def learning(self, train_X, train_y, test_X, test_y, model):
+        if (model == "1"):
+            LinearRegression(train_X, train_y, test_X, test_y)
+        elif (model == "2"):
+            SVM(train_X, train_y[:, 0], test_X, test_y[:, 0])
+        else:
+            print("Wrong input type, please try again")   
 
 train_path = '/home/divyansh/Documents/ENPM808A/final-project/data'                    
-train_obj = MLpipeline(train_path)
-train_A = train_obj.A
-train_y = np.vstack((train_obj.cmdV, train_obj.cmdW))
-
 testing_path = '/home/divyansh/Documents/ENPM808A/final-project/testing'
-test_obj = MLpipeline(testing_path)
-test_A = test_obj.A
-test_y = np.vstack((test_obj.cmdV, test_obj.cmdW))
 
-
-# y = np.vstack((obj.cmdV, obj.cmdW))
-# print(np.shape(y))
-
-
-############################################################## SVR
-## Create the SVR regressor
-# svr = SVR(epsilon=0.2)
-
-# # Create the Multioutput Regressor
-# mor = MultiOutputRegressor(svr)
-
-# # Train the regressor
-# mor = mor.fit(A_matrix, y.T)
-
-# Generate predictions for training data
-# y_pred = mor.predict(A_matrix)
-
-# # Evaluate the regressor
-# mse_one = mean_squared_error(obj.cmdV, y_pred[:,0])
-# mse_two = mean_squared_error(obj.cmdW, y_pred[:,1])
-# print(f'MSE - Training for first regressor: {mse_one} - second regressor: {mse_two}')
-# mae_one = mean_absolute_error(obj.cmdV, y_pred[:,0])
-# mae_two = mean_absolute_error(obj.cmdW, y_pred[:,1])
-# print(f'MAE - Training for first regressor: {mae_one} - second regressor: {mae_two}')
-
-# # Generate predictions for testing data
-# y_pred = mor.predict(test_A)
-
-# # Evaluate the regressor
-# mse_one = mean_squared_error(obj_test.cmdV, y_pred[:,0])
-# mse_two = mean_squared_error(obj_test.cmdW, y_pred[:,1])
-# print(f'MSE - Testing for first regressor: {mse_one} - second regressor: {mse_two}')
-# mae_one = mean_absolute_error(obj_test.cmdV, y_pred[:,0])
-# mae_two = mean_absolute_error(obj_test.cmdW, y_pred[:,1])
-# print(f'MAE - Testing for first regressor: {mae_one} - second regressor: {mae_two}')
-
-################################################### MULTI LAYER PERCEPTRON CLASSIFIER
-
-# clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-# clf.fit(A_matrix, y.T)
-# y_pred = clf.predict(test_A)
-# mse_one = mean_squared_error(obj_test.cmdV, y_pred[:,0])
-# mse_two = mean_squared_error(obj_test.cmdW, y_pred[:,1])
-# print(f'MSE - Testing for first regressor: {mse_one} - second regressor: {mse_two}')
-# mae_one = mean_absolute_error(obj_test.cmdV, y_pred[:,0])
-# mae_two = mean_absolute_error(obj_test.cmdW, y_pred[:,1])
-# print(f'MAE - Testing for first regressor: {mae_one} - second regressor: {mae_two}')
+print("Available models are: ")
+print('\n', "1: Linear Regression", '\n', "2: SVM", '\n', "3: ", '\n', "4: ")
+model = input("Please enter the model number: ")
+MLpipeline(train_path, testing_path, model)

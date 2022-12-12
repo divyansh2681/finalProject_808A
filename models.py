@@ -8,32 +8,38 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.multioutput import MultiOutputRegressor, MultiOutputClassifier
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-# from sklearn.neural_network import MLPClassifierRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.linear_model import Ridge
+from sklearn.metrics import r2_score
 
 class MLmodels():
 
-    def modelSVR(self, train_A, test_A):  # X here is my A matrix
+    def modelSVR(self, train_X, test_X, train_y, test_y):  # X here is my A matrix
         svr = SVR(epsilon=0.2)
+        mor = MultiOutputRegressor(svr) # Create the Multioutput Regressor
+        mor = mor.fit(train_X, train_y) #training
+        y_pred_test = mor.predict(test_X) # predicting
+        y_pred_train = mor.predict(train_X)
+        print("error in the train set")
+        self.errorCalculation(y_pred_train, train_y)
+        print("error in the test set")
+        self.errorCalculation(y_pred_test, test_y)
 
-        # Create the Multioutput Regressor
-        mor = MultiOutputRegressor(svr)
-        y = np.vstack((self.cmdV, self.cmdW))
-        # Train the regressor
-        mor = mor.fit(train_A, y.T)
+    def model_2(self, train_X, test_X, test_y, train_y):
+        clf = Ridge(alpha=1.0)
+        clf = clf.fit(train_X, train_y)
+        y_pred_test = clf.predict(test_X) # predicting
+        y_pred_train = clf.predict(train_X)
+        print("error in the train set")
+        self.errorCalculation(y_pred_train, train_y)
+        print("error in the test set")
+        self.errorCalculation(y_pred_test, test_y)
 
-        # Generate predictions for training data
-        y_pred = mor.predict(test_A)
-        return y_pred
-
-    def model_2(self, train_A, test_A):
+    def model_3(self, train_X, test_X, test_y, train_y):
         y_pred = 0
         return y_pred
 
-    def model_3(self, train_A, test_A):
-        y_pred = 0
-        return y_pred
-
-    def model_4(self, train_A, test_A):
+    def model_4(self, train_X, test_X, test_y, train_y):
         y_pred = 0
         return y_pred
 
@@ -45,18 +51,8 @@ class MLmodels():
         mae_one = mean_absolute_error(y_actual[:, 0], y_pred[:,0])
         mae_two = mean_absolute_error(y_actual[:, 1], y_pred[:,1])
         print(f'MAE - Training for first regressor: {mae_one} - second regressor: {mae_two}')
+        # r2_score_val = r2_score(y_actual, y_pred)
+        # print(r2_score_val)
 
-    
-    # def learning(self):
-    #     print("Available models are: ")
-    #     print('\n', "1: SVM", '\n', "2: Perceptron", '\n', "3: Neural Net", '\n', "4: Regression")
-    #     model = input("Please enter the model number: ")
-    #     print("Predicting the mean squared error and mean absolute error")
-    #     if (model == "1"):
-    #         y_pred = self.modelSVR(X, self.A)
-    #     elif (model == "2"):
-    #         y_pred = self.model_2(X, self.A)
-    #     else:
-    #         print("Wrong input type, please try again")   
 
-    #     self.errorCalculation(y_pred, y_actual)
+
