@@ -1,0 +1,26 @@
+README
+
+This repository has the code for the Final Project for the course ENPM808A - Introduction to Machine Learning. The work belongs to Divyansh Agrawal. He is a master's in robotics student at the University of Maryland - College Park. This code is written in Python3. 
+
+Dependencies:
+
+-glob
+-pangas
+-NumPy
+-matplotlib
+-sklearn
+-xgboost
+
+Running the code:
+
+--extract the zip file
+--open the main.py file
+--run the file using Python3 (make sure the dependencies specified are installed)
+--enter the path to the folder containing training files
+--enter the path to the folder containing testing files
+--enter the model you want to run
+--wait for the results
+
+Note: By default, all the models will give the predictions for the translational component of the velocity. If you want to get the predictions for the rotational component, comment out lines 150, 152, and 156 and un-comment lines 149, 153, and 155 in the utils.py file.
+
+If you have any questions, please feel free to reach me at dagrawa1@umd.edu
