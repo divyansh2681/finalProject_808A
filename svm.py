@@ -1,6 +1,5 @@
 import numpy as np
 from sklearn.svm import SVR
-from sklearn.multioutput import MultiOutputRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from sklearn.utils import shuffle
@@ -20,20 +19,17 @@ class SVM():
         self.curve_plotting(self.full_X, self.full_y)
 
     def splitData(self):
+        """
+        method for shuffling the data and splitting into training and validation
+        """
         self.full_X = shuffle(self.full_X, random_state=20, n_samples=None)
         self.full_y = shuffle(self.full_y, random_state=20, n_samples=None)
-
-        # self.full_y[:, 0][self.full_y[:, 0]>max(self.full_y[:, 0])] = max(self.full_y[:, 0])
-        # self.full_y[:, 1][self.full_y[:, 1]>max(self.full_y[:, 1])] = max(self.full_y[:, 1])
-
-
-        # self.full_y[:, 0][self.full_y[:, 0]<min(self.full_y[:, 0])] = min(self.full_y[:, 0])
-        # self.full_y[:, 1][self.full_y[:, 1]<min(self.full_y[:, 1])] = min(self.full_y[:, 1])
-
-
         self.train_X, self.val_X, self.train_y, self.val_y = train_test_split(self.full_X, self.full_y, test_size=0.2, random_state=42)
 
     def prediction(self):
+        """
+        method for predicting the outputs using the model
+        """
         kk = []
         scores_list = []
         self.var = 'poly'
@@ -47,21 +43,21 @@ class SVM():
             scores_list.append(r2_score_value)
 
         min_r2_score_index = scores_list.index(max(scores_list))
-
         mor = SVR(C = min_r2_score_index + 1, epsilon=0.2)
         mor.fit(self.full_X, self.full_y)
-
         self.predicted_full_y = mor.predict(self.test_X)
-
         r2_score_final = r2_score(self.test_y, self.predicted_full_y)
+        print(scores_list)
         print("R2 score for the test data: ", r2_score_final)
-        # k = range(1, 11, 1)
         plt.plot(kk, scores_list)
         plt.xlabel("Value of lamba, regularization parameter")
         plt.ylabel("R2 Score")
         plt.title("R2 score Vs Regularization parameter")
 
     def curve_plotting(self, X,y):
+        """
+        method for plotting the curves
+        """
         train_sizes, train_scores, test_scores = learning_curve(SVR(C = 1, kernel = self.var, epsilon=0.2), X, y, cv=10, n_jobs=-1, train_sizes=np.linspace(0.01, 1.0, 50))
         train_mean = np.mean(train_scores, axis=1)
         train_std = np.std(train_scores, axis=1)
